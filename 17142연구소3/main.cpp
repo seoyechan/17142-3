@@ -7,7 +7,9 @@
 using namespace std;
 
 int n, m;
+int nRet;
 int total_virus;
+int total_zero;
 int nfiled[51][51];
 int nfiled_copy[51][51];
 
@@ -27,23 +29,43 @@ int bfs()
 {
 	pos cur_pos = { 0, 0 };
 	pos next_pos = { 0, 0 };
+	int zero = 0;
+	int total_time = m;
+	int cur_time = 1;
+	int queue_last_size = 0;
+	int queue_first_size = 0;
 
 	while (!bfs_q.empty())
 	{
 		cur_pos = bfs_q.front();
 		bfs_q.pop();
+		queue_first_size++;
 
-		for (int i = 0; i < 4; i++){
+		for (int i = 0; i < 4; i++)
+		{
 			next_pos.x = cur_pos.x + dirx[i];
 			next_pos.y = cur_pos.y + diry[i];
 
 			if (next_pos.x >= 0 && next_pos.x < n && next_pos.y >= 0 && next_pos.y < n && nfiled_copy[next_pos.y][next_pos.x] == 0){
 				nfiled_copy[next_pos.y][next_pos.x] = 2;
 				bfs_q.push(next_pos);
+				zero++;
+				queue_last_size++;
 			}
 		}
+
+		if (queue_first_size == total_time)
+		{
+			cur_time++;
+			total_time = queue_last_size;
+			queue_last_size = 0;
+			queue_first_size = 0;
+		}
 	}
-	return 0;
+	
+	if (zero == total_zero)		return cur_time;
+	else						return -1;
+	
 }
 
 int fnCombination(int num, int cnt)
@@ -56,6 +78,13 @@ int fnCombination(int num, int cnt)
 			for (int j = 0; j < n; j++)
 				nfiled_copy[i][j] = nfiled[i][j];
 
+		int temp_Ret = bfs();
+		
+		if (temp_Ret == -1)
+			return 0;
+
+		if (temp_Ret < nRet)
+			nRet = temp_Ret ;
 
 		return 0;
 	}
@@ -64,10 +93,7 @@ int fnCombination(int num, int cnt)
 		selected_virus[cnt] = virus[i];
 		fnCombination(i + 1, cnt + 1);
 	}
-
-	
 }
-
 
 int main()
 {
@@ -81,6 +107,7 @@ int main()
 	{
 		scanf("%d %d", &n, &m);
 		total_virus = 0;
+		total_zero = 0;
 		for (int i = 0; i < n; i++){
 			for (int j = 0; j < n; j++){
 				scanf("%d", &nfiled[i][j]);
@@ -89,13 +116,21 @@ int main()
 					virus[total_virus] = { j, i };
 					total_virus++;
 				}
+				else if (nfiled[i][j] == 0)
+				{
+					total_zero++;
+				}
 
 			}
 		}
 
+		nRet = 987654321;
 		fnCombination(0, 0);
 
+		if (nRet == 987654321)
+			nRet = 1;
 
+		printf("%d\n", nRet - 2);
 
 
 
