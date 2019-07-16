@@ -11,7 +11,7 @@ int nRet;
 int total_virus;
 int total_zero;
 int nfiled[51][51];
-int nfiled_copy[51][51];
+int nvisit[51][51];
 
 typedef struct pos{
 	int x, y;
@@ -34,6 +34,9 @@ int bfs()
 	int cur_time = 1;
 	int queue_last_size = 0;
 	int queue_first_size = 0;
+	int temp = 0;
+
+	nvisit[next_pos.y][next_pos.x] = 0;
 
 	while (!bfs_q.empty())
 	{
@@ -46,11 +49,19 @@ int bfs()
 			next_pos.x = cur_pos.x + dirx[i];
 			next_pos.y = cur_pos.y + diry[i];
 
-			if (next_pos.x >= 0 && next_pos.x < n && next_pos.y >= 0 && next_pos.y < n && nfiled_copy[next_pos.y][next_pos.x] == 0){
-				nfiled_copy[next_pos.y][next_pos.x] = 2;
-				bfs_q.push(next_pos);
-				zero++;
-				queue_last_size++;
+			if (next_pos.x >= 0 && next_pos.x < n && next_pos.y >= 0 && next_pos.y < n && !nvisit[next_pos.y][next_pos.x])
+			{
+				if (!nfiled[next_pos.y][next_pos.x]){
+					nvisit[next_pos.y][next_pos.x] = 1;
+					bfs_q.push(next_pos);
+					zero++;
+					queue_last_size++;
+				}
+				else if (nfiled[next_pos.y][next_pos.x] == 2 && zero != total_zero){
+					nvisit[next_pos.y][next_pos.x] = 1;
+					bfs_q.push(next_pos);
+					queue_last_size++;
+				}
 			}
 		}
 
@@ -62,10 +73,10 @@ int bfs()
 			queue_first_size = 0;
 		}
 	}
-	
-	if (zero == total_zero)		return cur_time;
+
+	if (zero == total_zero)		return cur_time - 2;
 	else						return -1;
-	
+
 }
 
 int fnCombination(int num, int cnt)
@@ -74,17 +85,18 @@ int fnCombination(int num, int cnt)
 		for (int i = 0; i < m; i++){
 			bfs_q.push(selected_virus[i]);
 		}
+
 		for (int i = 0; i < n; i++)
 			for (int j = 0; j < n; j++)
-				nfiled_copy[i][j] = nfiled[i][j];
+				nvisit[i][j] = 0;
 
 		int temp_Ret = bfs();
-		
+
 		if (temp_Ret == -1)
 			return 0;
 
 		if (temp_Ret < nRet)
-			nRet = temp_Ret ;
+			nRet = temp_Ret;
 
 		return 0;
 	}
@@ -125,12 +137,15 @@ int main()
 		}
 
 		nRet = 987654321;
-		fnCombination(0, 0);
+		if (total_zero != 0)
+			fnCombination(0, 0);
+		else
+			nRet = 0;
 
 		if (nRet == 987654321)
-			nRet = 1;
+			nRet = -1;
 
-		printf("%d\n", nRet - 2);
+		printf("%d\n", nRet);
 
 
 
